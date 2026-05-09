@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google</title>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #202124;
+            --google-blue: #4285f4;
+            --google-red: #ea4335;
+            --google-yellow: #fbbc05;
+            --google-green: #34a853;
+            --border-color: #dfe1e5;
+        }
+
+        body.corrupted {
+            --bg-color: #0a0a0a;
+            --text-color: #ff3e3e;
+            --google-blue: #8b0000;
+            --google-red: #8b0000;
+            --google-yellow: #8b0000;
+            --google-green: #8b0000;
+            --border-color: #333;
+            animation: shake 0.1s infinite;
+            cursor: crosshair;
+        }
+
+        @keyframes shake {
+            0% { transform: translate(0,0); }
+            50% { transform: translate(1px, -1px); filter: contrast(1.5); }
+            100% { transform: translate(-1px, 1px); }
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 2s, color 2s;
+        }
+
+        /* Header */
+        header {
+            height: 60px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 13px;
+        }
+
+        header a {
+            margin-left: 15px;
+            text-decoration: none;
+            color: var(--text-color);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 100px;
+        }
+
+        .logo {
+            font-size: 90px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            user-select: none;
+        }
+
+        .logo span:nth-child(1) { color: var(--google-blue); }
+        .logo span:nth-child(2) { color: var(--google-red); }
+        .logo span:nth-child(3) { color: var(--google-yellow); }
+        .logo span:nth-child(4) { color: var(--google-blue); }
+        .logo span:nth-child(5) { color: var(--google-green); }
+        .logo span:nth-child(6) { color: var(--google-red); }
+
+        .search-container {
+            width: 100%;
+            max-width: 584px;
+            position: relative;
+        }
+
+        .search-bar {
+            width: 100%;
+            height: 44px;
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 0 45px;
+            font-size: 16px;
+            outline: none;
+            transition: box-shadow 0.2s;
+            background-color: transparent;
+            color: var(--text-color);
+        }
+
+        .search-bar:hover, .search-bar:focus {
+            box-shadow: 0 1px 6px rgba(32,33,36,.28);
+        }
+
+        .buttons {
+            margin-top: 30px;
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            background-color: #f8f9fa;
+            border: 1px solid #f8f9fa;
+            border-radius: 4px;
+            color: #3c4043;
+            font-size: 14px;
+            padding: 0 16px;
+            height: 36px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            border: 1px solid #dadce0;
+            box-shadow: 0 1px 1px rgba(0,0,0,.1);
+        }
+
+        /* Results Area */
+        #results {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 600px;
+            display: none;
+        }
+
+        .result-item {
+            margin-bottom: 30px;
+        }
+
+        .result-url { font-size: 14px; color: #202124; margin-bottom: 4px; }
+        .result-title { font-size: 20px; color: #1a0dab; text-decoration: none; cursor: pointer; }
+        .result-desc { font-size: 14px; color: #4d5156; line-height: 1.5; }
+
+        body.corrupted .result-title { color: #ff3e3e; text-decoration: underline; }
+        body.corrupted .result-desc { color: #8b0000; }
+
+        #overlay {
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: black;
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<header id="top-nav">
+    <a href="#">Gmail</a>
+    <a href="#">Images</a>
+    <a href="#" style="background: #ccc; border-radius: 50%; width: 32px; height: 32px; display: inline-block; text-align: center; line-height: 32px;">U</a>
+</header>
+
+<main id="main-ui">
+    <div class="logo" id="main-logo">
+        <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+    </div>
+
+    <div class="search-container">
+        <input type="text" class="search-bar" id="search-input" autofocus autocomplete="off">
+    </div>
+
+    <div class="buttons" id="main-buttons">
+        <button id="search-btn">Google Search</button>
+        <button>I'm Feeling Lucky</button>
+    </div>
+
+    <div id="results"></div>
+</main>
+
+<div id="overlay"></div>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const resultsDiv = document.getElementById('results');
+    const mainLogo = document.getElementById('main-logo');
+    const mainUI = document.getElementById('main-ui');
+    const overlay = document.getElementById('overlay');
+    
+    let searchCount = 0;
+    let isCorrupted = false;
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            performSearch(searchInput.value);
+        }
+    });
+
+    document.getElementById('search-btn').addEventListener('click', () => {
+        performSearch(searchInput.value);
+    });
+
+    function performSearch(query) {
+        if (!query.trim()) return;
+        searchCount++;
+        
+        // Hide initial center UI
+        mainUI.style.paddingTop = "20px";
+        mainLogo.style.fontSize = "40px";
+        mainLogo.style.marginBottom = "10px";
+        document.getElementById('main-buttons').style.display = "none";
+        resultsDiv.style.display = "block";
+
+        resultsDiv.innerHTML = ''; // Clear results
+
+        if (searchCount >= 4) {
+            triggerHorror();
+        } else {
+            showNormalResults(query);
+        }
+    }
+
+    function showNormalResults(query) {
+        const data = [
+            { t: `Definition of ${query}`, d: "The quality or state of being certain..." },
+            { t: `${query} - Wikipedia`, d: "From Wikipedia, the free encyclopedia..." },
+            { t: `Is ${query} safe?`, d: "Many users report strange occurrences when searching for this..." }
+        ];
+
+        data.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div class="result-url">https://en.wikipedia.org › wiki</div>
+                <div class="result-title">${item.t}</div>
+                <div class="result-desc">${item.d}</div>
+            `;
+            resultsDiv.appendChild(div);
+        });
+    }
+
+    function triggerHorror() {
+        isCorrupted = true;
+        document.body.classList.add('corrupted');
+        
+        const horrorData = [
+            { t: "I CAN SEE YOU", d: "Stop looking at the screen. I am right behind you." },
+            { t: "HELP ME HELP ME HELP ME", d: "01001000 01000101 01001100 01010000" },
+            { t: "YOU ARE ALONE", d: "No one is coming. The browser is your cage now." }
+        ];
+
+        horrorData.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `
+                <div class="result-url">ERROR // ERROR // ERROR</div>
+                <div class="result-title">${item.t}</div>
+                <div class="result-desc">${item.d}</div>
+            `;
+            resultsDiv.appendChild(div);
+        });
+
+        // Flickering and weird behavior
+        setInterval(() => {
+            searchInput.value = Math.random() > 0.5 ? "GET OUT" : "WHO ARE YOU?";
+        }, 1000);
+
+        setTimeout(() => {
+            jumpScare();
+        }, 5000);
+    }
+
+    function jumpScare() {
+        overlay.style.display = "flex";
+        overlay.innerHTML = "<h1>IT IS TOO LATE</h1>";
+        
+        setTimeout(() => {
+            overlay.style.backgroundColor = "white";
+            overlay.style.color = "black";
+            overlay.innerHTML = "<h1>CONNECTION LOST</h1><p>User #666 disconnected.</p>";
+        }, 500);
+    }
+
+    // Auto-focus logic
+    document.addEventListener('click', () => searchInput.focus());
+</script>
+
+</body>
+</html>
